@@ -1,0 +1,40 @@
+from scipy import stats
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import random as rd
+
+"Black-Scholes model to price a european option at par"
+
+def DivBlackScholes(cp, S, K, T, v, r, q): 
+    
+    d1 = (np.log(S/K)+((r-q+(0.5*(v**2))*T))/(v*np.sqrt(T)))
+    d2 = d1 - v*np.sqrt(T)
+
+    price = (cp*(S-q)*stats.norm.cdf(cp*d1)) - (cp*K*np.exp(-r*T)*stats.norm.cdf(cp*d2))
+
+    return price
+
+S = np.array(rd.sample(range(50), 50))
+T = np.arange(0.0,5.0,0.1)
+r = 0.01
+K = S
+v = 0.59
+q = .01
+cp = 1
+
+data = {'Price': S, 'Volatility': v, 'Value': DivBlackScholes(cp, S, K, T, v, r, q)}
+df = pd.DataFrame(data, columns = ['Price', 'Volatility', 'Value'])
+
+S, T = np.meshgrid(S, T)
+Z = DivBlackScholes(cp, S, K, T, v, r, q)
+
+fig = plt.figure(figsize=(20,20))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_wireframe(S, T, Z)
+ax.set_xlabel('Asset Price')
+ax.set_ylabel('Time')
+ax.set_zlabel('Option Price')
+ax.set_title('Option Prices with Black-Scholes')
+plt.show()
